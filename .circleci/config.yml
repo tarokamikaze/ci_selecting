@@ -9,7 +9,7 @@ jobs:
         MYSQL_ALLOW_EMPTY_PASSWORD: yes
         MYSQL_DATABASE: sample
       command: [--character-set-server=utf8, --collation-server=utf8_general_ci, --default-storage-engine=innodb]
-    - image: tarokamikaze/concourse-test-server:latest
+    - image: tarokamikaze/couchbase-test-server:latest
       environment:
         CB_CONNECT: couchbase://localhost
         CB_ADMIN_USER: testuser
