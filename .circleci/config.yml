@@ -1,0 +1,43 @@
+version: 2
+jobs:
+  build:
+    working_directory: /go/src/github.com/tarokamikaze/ci_selecting
+    docker:
+    - image: circleci/golang:1.11.1
+    - image: circleci/mysql:5.7
+      environment:
+        MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        MYSQL_DATABASE: sample
+      command: [--character-set-server=utf8, --collation-server=utf8_general_ci, --default-storage-engine=innodb]
+    - image: tarokamikaze/concourse-test-server:latest
+      environment:
+        CB_CONNECT: couchbase://localhost
+        CB_ADMIN_USER: testuser
+        CB_ADMIN_PASSWORD: testpass
+        CB_TEST_BUCKET_PASSWORD: testpass
+        CB_MEMORY_QUOTA: 512      Couchbase
+        CB_INDEX_MEMORY_QUOTA: 512        Couchbase
+    steps:
+        - checkout
+        - run:
+            name: "install mysql client"
+            command: apt install mysql-client
+        - run:
+            name: "waiting mysql startup"
+            command: dockerize -wait tcp://localhost:3306 -timeout 1m
+        - run:
+            name: "migrate"
+            command: mysql -uroot sample < infra/mysql/migrate.sql
+        - run:
+            name: "dep ensure"
+            command: dep ensure
+#        - run:
+#            name: "waiting couchbase startup"
+        - run:
+            name: "tests"
+            command: go test -v $(go list ./... | grep -v /vendor/)
+        - run:
+            name: "vet"
+            command: go vet $(go list ./... | grep -v /vendor/)
+#        - run:
+#            name: "artifacts"
