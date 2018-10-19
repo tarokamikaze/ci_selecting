@@ -30,9 +30,9 @@ jobs:
         - run:
             name: "migrate"
             command: mysql -uroot -h 127.0.0.1 sample < infra/mysql/migrate.sql
-#        - run:
-#            name: "dep ensure"
-#            command: dep ensure
+        - run:
+            name: "dep ensure"
+            command: dep ensure
 #        - run:
 #            name: "waiting couchbase startup"
         - run:
