@@ -9,6 +9,5 @@ CREATE TABLE `accounts` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日時',
   `deleted_at` timestamp NULL DEFAULT NULL COMMENT '削除日時',
   PRIMARY KEY (`id`),
-  KEY `idx_company_id` (`company_id`),
   KEY `idx_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='アカウントテーブル'

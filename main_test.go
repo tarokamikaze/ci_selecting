@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -24,7 +25,7 @@ func TestMainPage(t *testing.T) {
 	for _, tt := range tests {
 		e := echo.New()
 		r, _ := http.NewRequest("GET", "/hello", nil)
-		w := &http.Response{}
+		w := httptest.NewRecorder()
 		ctx := e.NewContext(r, w)
 
 		t.Run(tt.name, func(t *testing.T) {

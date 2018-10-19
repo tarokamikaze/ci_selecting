@@ -7,6 +7,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/pkg/errors"
 )
 
 type (
@@ -29,24 +30,27 @@ func main() {
 }
 
 func MainPage(c echo.Context) error {
-	db, err := gorm.Open("mysql", "root@localhost?charset=utf8&parseTime=True&loc=Local")
+	DBMS := "mysql"
+	USER := "root"
+	PASS := ""
+	PROTOCOL := "tcp(127.0.0.1:3306)"
+	DBNAME := "sample"
+
+	CONNECT := USER + ":" + PASS + "@" + PROTOCOL + "/" + DBNAME
+	db, err := gorm.Open(DBMS, CONNECT)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "cannot connect to mysql host")
 	}
 	defer db.Close()
 
 	cluster, err := gocb.Connect("couchbase://localhost")
-	if err != nil{
-		return err
+	if err != nil {
+		return errors.Wrap(err, "cannot connect to cb host")
 	}
 	defer cluster.Close()
-	cluster.Authenticate(gocb.PasswordAuthenticator{
-		Username: "testuser",
-		Password: "testpass",
-	})
 	bucket, err := cluster.OpenBucket("db_test", "testpass")
-	if err != nil{
-		return err
+	if err != nil {
+		return errors.Wrap(err, "cannot connect to cb bucket")
 	}
 
 	bucket.Upsert("u:kingarthur",
@@ -60,6 +64,9 @@ func MainPage(c echo.Context) error {
 	var inUser User
 	bucket.Get("u:kingarthur", &inUser)
 	fmt.Printf("User: %v\n", inUser)
+
+	bm := bucket.Manager("testuser", "testpass")
+	bm.Flush()
 
 	return nil
 }

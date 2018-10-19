@@ -14,20 +14,20 @@ jobs:
         CB_CONNECT: couchbase://localhost
         CB_ADMIN_USER: testuser
         CB_ADMIN_PASSWORD: testpass
-        CB_TEST_BUCKET_PASSWORD: testpass
+        CB_BUCKET_PASSWORD: testpass
         CB_MEMORY_QUOTA: 512      Couchbase
         CB_INDEX_MEMORY_QUOTA: 512        Couchbase
     steps:
-        - checkout
         - run:
             name: "install mysql client"
-            command: apt install mysql-client
+            command: sudo apt install mysql-client
+        - checkout
         - run:
             name: "waiting mysql startup"
             command: dockerize -wait tcp://localhost:3306 -timeout 1m
         - run:
             name: "migrate"
-            command: mysql -uroot sample < infra/mysql/migrate.sql
+            command: mysql -uroot -h 127.0.0.1 sample < infra/mysql/migrate.sql
         - run:
             name: "dep ensure"
             command: dep ensure
