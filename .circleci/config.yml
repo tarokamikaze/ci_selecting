@@ -1,45 +1,54 @@
 version: 2
 jobs:
   build:
-    working_directory: /go/src/github.com/tarokamikaze/ci_selecting
-    docker:
-    - image: circleci/golang:1.11.1
-    - image: circleci/mysql:5.7
-      environment:
-        MYSQL_ALLOW_EMPTY_PASSWORD: yes
-        MYSQL_DATABASE: sample
-      command: [--character-set-server=utf8, --collation-server=utf8_general_ci, --default-storage-engine=innodb]
-    - image: tarokamikaze/couchbase-test-server:latest
-      environment:
-        CB_CONNECT: couchbase://localhost
-        CB_ADMIN_USER: testuser
-        CB_ADMIN_PASSWORD: testpass
-        CB_BUCKET_PASSWORD: testpass
-        CB_MEMORY_QUOTA: 512
-        CB_INDEX_MEMORY_QUOTA: 512
-        CB_RAM_PER_NODE_TEST: 512
-      command: [/opt/couchbase/init.sh]
+    working_directory: /go/github.com/tarokamikaze/ci_selecting/
+    # docker:
+    # - image: docker:18.05.0-ce-git
+    # - image: circleci/golang:1.11
+    machine: true
+    # image: circleci/golang:1.11
     steps:
-        - run:
-            name: "install mysql client"
-            command: sudo apt install mysql-client
-        - checkout
-        - run:
-            name: "waiting mysql startup"
-            command: dockerize -wait tcp://localhost:3306 -timeout 1m
-        - run:
-            name: "migrate"
-            command: mysql -uroot -h 127.0.0.1 sample < infra/mysql/migrate.sql
-        - run:
-            name: "dep ensure"
-            command: dep ensure
-#        - run:
-#            name: "waiting couchbase startup"
-        - run:
-            name: "tests"
-            command: go test -v $(go list ./... | grep -v /vendor/)
-        - run:
-            name: "vet"
-            command: go vet $(go list ./... | grep -v /vendor/)
-#        - run:
-#            name: "artifacts"
+    - run:
+        name: mkdir
+        command: sudo mkdir /go && sudo chown -R circleci:circleci /go
+    - checkout
+    # - restore_cache:
+    #     key: vendor-{{ checksum "backend/glide.lock" }}
+    # - restore_cache:
+    #     key: docker-compose-1.22.0
+    # - run:
+    #     name: Install Docker Compose
+    #     command: |
+    #       if [ ! -e /usr/local/bin/docker-compose ]; then
+    #         curl -L "https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    #         chmod +x /usr/local/bin/docker-compose
+    #       fi
+    # - save_cache:
+    #     key: docker-compose-1.22.0
+    #     paths:
+    #     - /usr/local/bin/docker-compose
+    # - setup_remote_docker:
+    #     version: 18.05.0-ce
+    # - run: |
+    #     if [[ $CIRCLE_SHELL_ENV =~ "localbuild" ]]; then
+    #       sudo chown root /usr/bin/docker
+    #       sudo chmod u+s /usr/bin/docker
+    #     fi
+    #     docker info
+    - run:
+        name: "building test runner"
+        working_directory: infra/
+        command: docker-compose -f docker-compose.test.yml build
+    - run:
+        name: "statup containers"
+        working_directory: infra/
+        command: docker-compose -f docker-compose.test.yml up -d
+    - run:
+        name: "running tests"
+        working_directory: infra/
+        command: |
+          export COMPOSE_FILE=`pwd`/docker-compose.test.yml
+          sh heavy-test.sh
+    - store_artifacts:
+        path: /tmp/test-result/cov.out
+        destination: cov.out

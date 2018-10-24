@@ -1,0 +1,37 @@
+version: '2'
+services:
+  tester:
+    build:
+      context: ../
+      dockerfile: ./infra/test/Dockerfile
+  redis:
+    image: circleci/redis:alpine
+  mysql:
+    image: circleci/mysql:5.6
+    ports:
+    - 3307:3306
+    environment:
+      TZ: JST-9
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+      MYSQL_ROOT_PASSWORD: user
+      MYSQL_DATABASE: testing
+  couchbase:
+    container_name: 'couch'
+    command: "/opt/couchbase/init.sh"
+    build:
+      context: ./couchbase
+      dockerfile: Dockerfile
+    ports:
+    - 8091:8091
+    - 8092:8092
+    - 8093:8093
+    - 8094:8094
+    - 11207:11207
+    - 11210:11210
+    - 11211:11211
+    - 18091:18091
+    - 18092:18092
+    - 18093:18093
+    env_file:
+    - datastore.dev.env
