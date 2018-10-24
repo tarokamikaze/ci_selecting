@@ -1,16 +1,16 @@
 version: 2
 jobs:
   build:
-    working_directory: /go/github.com/tarokamikaze/ci_selecting/
+#    working_directory: /go/github.com/tarokamikaze/ci_selecting/
     # docker:
     # - image: docker:18.05.0-ce-git
     # - image: circleci/golang:1.11
     machine: true
     # image: circleci/golang:1.11
     steps:
-    - run:
-        name: mkdir
-        command: sudo mkdir /go && sudo chown -R circleci:circleci /go
+#    - run:
+#        name: mkdir
+#        command: sudo mkdir /go && sudo chown -R circleci:circleci /go
     - checkout
     # - restore_cache:
     #     key: vendor-{{ checksum "backend/glide.lock" }}
