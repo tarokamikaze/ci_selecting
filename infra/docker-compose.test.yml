@@ -1,9 +1,10 @@
 version: '2'
 services:
   tester:
-    build:
-      context: ../
-      dockerfile: ./infra/test/Dockerfile
+    image: circleci/golang:1.11
+    command: tail -f /dev/null
+    volumes:
+    - ../:/go/src/ghe.intelligence-dev.com/SEEDS/ats
   redis:
     image: circleci/redis:alpine
   mysql:
