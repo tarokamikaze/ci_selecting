@@ -4,7 +4,7 @@ services:
     image: circleci/golang:1.11
     command: tail -f /dev/null
     volumes:
-    - ../:/go/src/ghe.intelligence-dev.com/SEEDS/ats
+    - ../:/go/github.com/tarokamikaze/ci_selecting
   redis:
     image: circleci/redis:alpine
   mysql:
